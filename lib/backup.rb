@@ -58,6 +58,7 @@ module Backup
       autoload :LocalFile,  File.join(SYNCER_PATH, 'cloud', 'local_file')
       autoload :CloudFiles, File.join(SYNCER_PATH, 'cloud', 'cloud_files')
       autoload :S3,         File.join(SYNCER_PATH, 'cloud', 's3')
+      autoload :S3cmd,      File.join(SYNCER_PATH, 'cloud', 's3cmd')      
     end
     module RSync
       autoload :Base,  File.join(SYNCER_PATH, 'rsync', 'base')

@@ -134,7 +134,7 @@ module Backup
             ['OpenSSL', 'GPG'],
             # Syncers
             [
-              { 'Cloud' => ['CloudFiles', 'S3'] },
+              { 'Cloud' => ['CloudFiles', 'S3', 'S3cmd'] },
               { 'RSync' => ['Push', 'Pull', 'Local'] }
             ],
             # Notifiers
