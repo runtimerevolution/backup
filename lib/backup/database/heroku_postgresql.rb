@@ -52,8 +52,11 @@ module Backup
       # TODO if possible separate into multiple pipeline steps
       def capture_and_download_backup(app_name, where_to_put_it)
         backup_url = lambda {
-          `heroku pgbackups:capture --expire --app #{app_name}`
-          `heroku pgbackups:url --app #{app_name}`[0..-2]  # heroku returns the URL with a \n at the end
+          # See https://github.com/sstephenson/rbenv/issues/400
+          Bundler.with_clean_env {
+            `heroku pgbackups:capture --expire --app #{app_name}`  
+            `heroku pgbackups:url --app #{app_name}`[0..-2]  # heroku returns the URL with a \n at the end  
+          }          
         }
         "wget -O #{where_to_put_it} '#{backup_url.call}'"
       end      
