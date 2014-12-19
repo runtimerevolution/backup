@@ -45,7 +45,7 @@ module Backup
       end
 
       ##
-      # Performs the mysqldump command and outputs the dump file
+      # Performs the pgdump command and outputs the dump file
       # in the +dump_path+ using +dump_filename+.
       #
       #   <trigger>/databases/PostgreSQL[-<database_id>].sql[.gz]
@@ -88,7 +88,7 @@ module Backup
       end
 
       def password_option
-        "PGPASSWORD='#{ password }' " if password
+        "PGPASSWORD=#{ Shellwords.escape(password) } " if password
       end
 
       def sudo_option
@@ -96,7 +96,7 @@ module Backup
       end
 
       def username_option
-        "--username='#{ username }'" if username
+        "--username=#{ Shellwords.escape(username) }" if username
       end
 
       def connectivity_options
@@ -127,18 +127,6 @@ module Backup
       def dump_all?
         name == :all
       end
-
-      attr_deprecate :utility_path, :version => '3.0.21',
-          :message => 'Use Backup::Utilities.configure instead.',
-          :action => lambda {|klass, val|
-            Utilities.configure { pg_dump val }
-          }
-
-      attr_deprecate :pg_dump_utility, :version => '3.3.0',
-          :message => 'Use Backup::Utilities.configure instead.',
-          :action => lambda {|klass, val|
-            Utilities.configure { pg_dump val }
-          }
 
     end
   end

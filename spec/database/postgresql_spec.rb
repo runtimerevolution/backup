@@ -15,7 +15,7 @@ describe Database::PostgreSQL do
     Utilities.stubs(:utility).with(:sudo).returns('sudo')
   end
 
-  it_behaves_like 'a class that includes Configuration::Helpers'
+  it_behaves_like 'a class that includes Config::Helpers'
   it_behaves_like 'a subclass of Database::Base'
 
   describe '#initialize' do
@@ -219,7 +219,14 @@ describe Database::PostgreSQL do
         expect( db.send(:password_option) ).to be_nil
 
         db.password = 'my_password'
-        expect( db.send(:password_option) ).to eq "PGPASSWORD='my_password' "
+        expect( db.send(:password_option) ).to eq "PGPASSWORD=my_password "
+      end
+
+      it 'handles special characters' do
+        db.password = "my_password'\""
+        expect( db.send(:password_option) ).to eq(
+          "PGPASSWORD=my_password\\'\\\" "
+        )
       end
     end # describe '#password_option'
 
@@ -237,7 +244,14 @@ describe Database::PostgreSQL do
         expect( db.send(:username_option) ).to be_nil
 
         db.username = 'my_username'
-        expect( db.send(:username_option) ).to eq "--username='my_username'"
+        expect( db.send(:username_option) ).to eq "--username=my_username"
+      end
+
+      it 'handles special characters' do
+        db.username = "my_user'\""
+        expect( db.send(:username_option) ).to eq(
+          "--username=my_user\\'\\\""
+        )
       end
     end # describe '#username_option'
 
@@ -317,84 +331,6 @@ describe Database::PostgreSQL do
     end # describe '#tables_to_dump'
 
   end # describe 'pgdump option methods'
-
-  describe 'deprecations' do
-
-    describe '#utility_path' do
-      before do
-        # to satisfy Utilities.configure
-        File.stubs(:executable?).with('/foo').returns(true)
-        Logger.expects(:warn).with {|err|
-          expect( err ).to be_an_instance_of Configuration::Error
-          expect( err.message ).to match(
-            /Use Backup::Utilities\.configure instead/
-          )
-        }
-      end
-      after do
-        Database::PostgreSQL.clear_defaults!
-      end
-
-      context 'when set directly' do
-        it 'should issue a deprecation warning and set the replacement value' do
-          Database::PostgreSQL.new(model) do |db|
-            db.utility_path = '/foo'
-          end
-          # must check directly, since utility() calls are stubbed
-          expect( Utilities::UTILITY['pg_dump'] ).to eq '/foo'
-        end
-      end
-
-      context 'when set as a default' do
-        it 'should issue a deprecation warning and set the replacement value' do
-          Database::PostgreSQL.defaults do |db|
-            db.utility_path = '/foo'
-          end
-          Database::PostgreSQL.new(model)
-          # must check directly, since utility() calls are stubbed
-          expect( Utilities::UTILITY['pg_dump'] ).to eq '/foo'
-        end
-      end
-    end # describe '#utility_path'
-
-    describe '#pg_dump_utility' do
-      before do
-        # to satisfy Utilities.configure
-        File.stubs(:executable?).with('/foo').returns(true)
-        Logger.expects(:warn).with {|err|
-          expect( err ).to be_an_instance_of Configuration::Error
-          expect( err.message ).to match(
-            /Use Backup::Utilities\.configure instead/
-          )
-        }
-      end
-      after do
-        Database::PostgreSQL.clear_defaults!
-      end
-
-      context 'when set directly' do
-        it 'should issue a deprecation warning and set the replacement value' do
-          Database::PostgreSQL.new(model) do |db|
-            db.pg_dump_utility = '/foo'
-          end
-          # must check directly, since utility() calls are stubbed
-          expect( Utilities::UTILITY['pg_dump'] ).to eq '/foo'
-        end
-      end
-
-      context 'when set as a default' do
-        it 'should issue a deprecation warning and set the replacement value' do
-          Database::PostgreSQL.defaults do |db|
-            db.pg_dump_utility = '/foo'
-          end
-          Database::PostgreSQL.new(model)
-          # must check directly, since utility() calls are stubbed
-          expect( Utilities::UTILITY['pg_dump'] ).to eq '/foo'
-        end
-      end
-    end # describe '#pg_dump_utility'
-
-  end # describe 'deprecations' do
 
 end
 end

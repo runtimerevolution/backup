@@ -27,17 +27,16 @@ describe Backup::Utilities do
         # Compressors
         gzip    '/path/to/gzip'
         bzip2   '/path/to/bzip2'
-        lzma    '/path/to/lzma'   # deprecated
-        pbzip2  '/path/to/pbzip2' # deprecated
 
         # Database Utilities
-        mongo       '/path/to/mongo'
-        mongodump   '/path/to/mongodump'
-        mysqldump   '/path/to/mysqldump'
-        pg_dump     '/path/to/pg_dump'
-        pg_dumpall  '/path/to/pg_dumpall'
-        redis_cli   '/path/to/redis-cli'
-        riak_admin  '/path/to/riak-admin'
+        mongo        '/path/to/mongo'
+        mongodump    '/path/to/mongodump'
+        mysqldump    '/path/to/mysqldump'
+        pg_dump      '/path/to/pg_dump'
+        pg_dumpall   '/path/to/pg_dumpall'
+        redis_cli    '/path/to/redis-cli'
+        riak_admin   '/path/to/riak-admin'
+        innobackupex '/path/to/innobackupex'
 
         # Encryptors
         gpg     '/path/to/gpg'
@@ -51,6 +50,7 @@ describe Backup::Utilities do
         sendmail  '/path/to/sendmail'
         exim      '/path/to/exim'
         send_nsca '/path/to/send_nsca'
+        zabbix_sender '/path/to/zabbix_sender'
       end
     end
 

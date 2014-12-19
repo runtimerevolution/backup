@@ -218,17 +218,6 @@ module Backup
       attr_accessor :keys
 
       ##
-      # @deprecated Use {#keys} and {#recipients}.
-      # @!attribute key
-      attr_deprecate :key,
-        :version => '3.0.26',
-        :message => "This has been replaced with #keys and #recipients",
-        :action  => lambda {|klass, val|
-          identifier = klass.send(:import_key, 'deprecated :key', val)
-          klass.recipients = identifier
-        }
-
-      ##
       # Specifies the recipients to use when encrypting the backup archive.
       #
       # When {#mode} is set to +:asymmetric+ or +:both+, the public key for
@@ -370,7 +359,7 @@ module Backup
       #   end
       #
       # @!scope class
-      # @see Configuration::Helpers::ClassMethods#defaults
+      # @see Config::Helpers::ClassMethods#defaults
       # @yield [config] OpenStruct object
       # @!method defaults
 

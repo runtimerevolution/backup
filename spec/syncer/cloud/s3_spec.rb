@@ -18,7 +18,7 @@ describe Syncer::Cloud::S3 do
   }
   let(:syncer) { Syncer::Cloud::S3.new(&required_config) }
 
-  it_behaves_like 'a class that includes Configuration::Helpers' do
+  it_behaves_like 'a class that includes Config::Helpers' do
     let(:default_overrides) {
       { 'encryption' => :aes256,
         'storage_class' => :reduced_redundancy }
@@ -247,10 +247,6 @@ describe Syncer::Cloud::S3 do
       expect( syncer.send(:get_remote_files, 'foo') ).to eq({})
     end
   end # describe '#get_remote_files'
-
-  describe 'Deprecations' do
-    include_examples 'Deprecation: #concurrency_type and #concurrency_level'
-  end
 
 end
 end

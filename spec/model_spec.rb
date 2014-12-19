@@ -186,6 +186,17 @@ describe 'Backup::Model' do
           end
         end
       end
+      module ThreeArgs
+        class Base
+          attr_accessor :arg1, :arg2, :arg3, :block_arg
+          def initialize(arg1, arg2, arg3, &block)
+            @arg1 = arg1
+            @arg2 = arg2
+            @arg3 = arg3
+            instance_eval(&block) if block_given?
+          end
+        end
+      end
     end
 
     # Set +const+ to +replacement+ for the calling block
@@ -286,42 +297,6 @@ describe 'Backup::Model' do
           model.syncers.first.should be_an_instance_of Fake::OneArg::Base
         end
       end
-
-      it 'should warn user of change from RSync to RSync::Push' do
-        Backup::Logger.expects(:warn).with do |err|
-          err.message.should match(
-            "'sync_with RSync' is now 'sync_with RSync::Push'"
-          )
-        end
-        model.expects(:get_class_from_scope).
-            with(Backup::Syncer, 'RSync::Push').
-            returns(stub(:new))
-        model.sync_with('Backup::Config::RSync')
-      end
-
-      it 'should warn user of change from S3 to Cloud::S3' do
-        Backup::Logger.expects(:warn).with do |err|
-          err.message.should match(
-            "'sync_with S3' is now 'sync_with Cloud::S3'"
-          )
-        end
-        model.expects(:get_class_from_scope).
-            with(Backup::Syncer, 'Cloud::S3').
-            returns(stub(:new))
-        model.sync_with('Backup::Config::S3')
-      end
-
-      it 'should warn user of change from CloudFiles to Cloud::CloudFiles' do
-        Backup::Logger.expects(:warn).with do |err|
-          err.message.should match(
-            "'sync_with CloudFiles' is now 'sync_with Cloud::CloudFiles'"
-          )
-        end
-        model.expects(:get_class_from_scope).
-            with(Backup::Syncer, 'Cloud::CloudFiles').
-            returns(stub(:new))
-        model.sync_with('Backup::Config::CloudFiles')
-      end
     end
 
     describe '#notify_by' do
@@ -382,20 +357,30 @@ describe 'Backup::Model' do
 
     describe '#split_into_chunks_of' do
       it 'should add a splitter' do
-        using_fake('Splitter', Fake::TwoArgs::Base) do
-          model.split_into_chunks_of(123)
-          model.splitter.should be_an_instance_of Fake::TwoArgs::Base
+        using_fake('Splitter', Fake::ThreeArgs::Base) do
+          model.split_into_chunks_of(123, 2)
+          model.splitter.should be_an_instance_of Fake::ThreeArgs::Base
           model.splitter.arg1.should be(model)
           model.splitter.arg2.should == 123
+          model.splitter.arg3.should == 2
         end
       end
 
       it 'should raise an error if chunk_size is not an Integer' do
         expect do
-          model.split_into_chunks_of('345')
+          model.split_into_chunks_of('345', 2)
         end.to raise_error {|err|
           err.should be_an_instance_of Backup::Model::Error
-          err.message.should match(/must be an Integer/)
+          err.message.should match(/must be Integers/)
+        }
+      end
+
+      it 'should raise an error if suffix_size is not an Integer' do
+        expect do
+          model.split_into_chunks_of(345, '2')
+        end.to raise_error {|err|
+          err.should be_an_instance_of Backup::Model::Error
+          err.message.should match(/must be Integers/)
         }
       end
     end
@@ -771,11 +756,11 @@ describe 'Backup::Model' do
       end
     end
 
-    context 'when name is given as a module defined under Backup::Config' do
-      # this is necessary since the specs in spec/config_spec.rb
-      # remove all the constants from Backup::Config as part of those tests.
+    context 'when name is given as a module defined under Backup::Config::DSL' do
+      # this is necessary since the specs in spec/config/dsl_spec.rb
+      # remove all the constants from Backup::Config::DSL as part of those tests.
       before(:all) do
-        module Backup::Config
+        class Backup::Config::DSL
           module TestScope
             module TestKlass; end
           end
@@ -786,7 +771,7 @@ describe 'Backup::Model' do
         model.send(
           :get_class_from_scope,
           Fake,
-          Backup::Config::TestScope
+          Backup::Config::DSL::TestScope
         ).should == Fake::TestScope
       end
 
@@ -794,7 +779,7 @@ describe 'Backup::Model' do
         model.send(
           :get_class_from_scope,
           Fake,
-          Backup::Config::TestScope::TestKlass
+          Backup::Config::DSL::TestScope::TestKlass
         ).should == Fake::TestScope::TestKlass
       end
     end

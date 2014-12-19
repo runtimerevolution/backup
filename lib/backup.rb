@@ -11,6 +11,7 @@ require 'thread'
 
 require 'open4'
 require 'thor'
+require 'shellwords'
 
 require 'excon'
 # Include response.inspect in error messages.
@@ -58,7 +59,6 @@ module Backup
       autoload :LocalFile,  File.join(SYNCER_PATH, 'cloud', 'local_file')
       autoload :CloudFiles, File.join(SYNCER_PATH, 'cloud', 'cloud_files')
       autoload :S3,         File.join(SYNCER_PATH, 'cloud', 's3')
-      autoload :S3cmd,      File.join(SYNCER_PATH, 'cloud', 's3cmd')      
     end
     module RSync
       autoload :Base,  File.join(SYNCER_PATH, 'rsync', 'base')
@@ -71,13 +71,14 @@ module Backup
   ##
   # Autoload Backup database files
   module Database
-    autoload :Base,             File.join(DATABASE_PATH, 'base')
-    autoload :MySQL,            File.join(DATABASE_PATH, 'mysql')
-    autoload :PostgreSQL,       File.join(DATABASE_PATH, 'postgresql')
-    autoload :MongoDB,          File.join(DATABASE_PATH, 'mongodb')
-    autoload :Redis,            File.join(DATABASE_PATH, 'redis')
-    autoload :Riak,             File.join(DATABASE_PATH, 'riak')
-    autoload :HerokuPostgreSQL, File.join(DATABASE_PATH, 'heroku_postgresql')
+    autoload :Base,       File.join(DATABASE_PATH, 'base')
+    autoload :MySQL,      File.join(DATABASE_PATH, 'mysql')
+    autoload :PostgreSQL, File.join(DATABASE_PATH, 'postgresql')
+    autoload :MongoDB,    File.join(DATABASE_PATH, 'mongodb')
+    autoload :Redis,      File.join(DATABASE_PATH, 'redis')
+    autoload :Riak,       File.join(DATABASE_PATH, 'riak')
+    autoload :OpenLDAP,   File.join(DATABASE_PATH, 'openldap')
+    autoload :SQLite,     File.join(DATABASE_PATH, 'sqlite')
   end
 
   ##
@@ -87,8 +88,6 @@ module Backup
     autoload :Gzip,   File.join(COMPRESSOR_PATH, 'gzip')
     autoload :Bzip2,  File.join(COMPRESSOR_PATH, 'bzip2')
     autoload :Custom, File.join(COMPRESSOR_PATH, 'custom')
-    autoload :Pbzip2, File.join(COMPRESSOR_PATH, 'pbzip2')
-    autoload :Lzma,   File.join(COMPRESSOR_PATH, 'lzma')
   end
 
   ##
@@ -108,9 +107,14 @@ module Backup
     autoload :Campfire,  File.join(NOTIFIER_PATH, 'campfire')
     autoload :Prowl,     File.join(NOTIFIER_PATH, 'prowl')
     autoload :Hipchat,   File.join(NOTIFIER_PATH, 'hipchat')
+    autoload :PagerDuty, File.join(NOTIFIER_PATH, 'pagerduty')
     autoload :Pushover,  File.join(NOTIFIER_PATH, 'pushover')
+    autoload :Slack,     File.join(NOTIFIER_PATH, 'slack')
     autoload :HttpPost,  File.join(NOTIFIER_PATH, 'http_post')
     autoload :Nagios,    File.join(NOTIFIER_PATH, 'nagios')
+    autoload :FlowDock,  File.join(NOTIFIER_PATH, 'flowdock')
+    autoload :Zabbix,    File.join(NOTIFIER_PATH, 'zabbix')
+    autoload :DataDog,   File.join(NOTIFIER_PATH, 'datadog')
   end
 
   ##
@@ -122,10 +126,9 @@ module Backup
     archive
     binder
     cleaner
+    model
     config
     cli
-    configuration
-    model
     package
     packager
     pipeline

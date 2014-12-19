@@ -7,12 +7,14 @@ module Backup
     UTILITY = {}
     NAMES = %w{
       tar cat split sudo chown hostname
-      gzip bzip2 lzma pbzip2
-      mongo mongodump mysqldump pg_dump pg_dumpall redis-cli riak-admin
+      gzip bzip2
+      mongo mongodump mysqldump innobackupex
+      pg_dump pg_dumpall redis-cli riak-admin
       gpg openssl
       rsync ssh
       sendmail exim
       send_nsca
+      zabbix_sender
     }
 
     module DSL
@@ -72,8 +74,6 @@ module Backup
       #     # Compressors
       #     gzip    '/path/to/gzip'
       #     bzip2   '/path/to/bzip2'
-      #     lzma    '/path/to/lzma'   # deprecated. use a Custom Compressor
-      #     pbzip2  '/path/to/pbzip2' # deprecated. use a Custom Compressor
       #
       #     # Database Utilities
       #     mongo       '/path/to/mongo'
@@ -96,21 +96,11 @@ module Backup
       #     sendmail  '/path/to/sendmail'
       #     exim      '/path/to/exim'
       #     send_nsca '/path/to/send_nsca'
+      #     zabbix_sender '/path/to/zabbix_sender'
       #   end
       #
       # These paths may be set using absolute paths, or relative to the
       # working directory when Backup is run.
-      #
-      # Note that many of Backup's components currently have their own
-      # configuration settings for utility paths. For instance, when configuring
-      # a +MySQL+ database backup, +mysqldump_utility+ may be used:
-      #
-      #   database MySQL do |db|
-      #     db.mysqldump_utility = '/path/to/mysqldump'
-      #   end
-      #
-      # Use of these configuration settings will override the path set here.
-      # (The use of these may be deprecated in the future)
       def configure(&block)
         DSL.instance_eval(&block)
       end
@@ -183,18 +173,12 @@ module Backup
 
         begin
           out, err = '', ''
-          # popen4 doesn't work in 1.8.7 with stock versions of ruby shipped
-          # with major OSs. Hack to make it stop segfaulting.
-          # See: https://github.com/engineyard/engineyard/issues/115
-          GC.disable if RUBY_VERSION < '1.9'
           ps = Open4.popen4(command) do |pid, stdin, stdout, stderr|
             stdin.close
             out, err = stdout.read.strip, stderr.read.strip
           end
         rescue Exception => e
           raise Error.wrap(e, "Failed to execute '#{ name }'")
-        ensure
-          GC.enable if RUBY_VERSION < '1.9'
         end
 
         if ps.success?

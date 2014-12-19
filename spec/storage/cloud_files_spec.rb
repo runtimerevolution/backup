@@ -15,12 +15,13 @@ describe Storage::CloudFiles do
   let(:storage) { Storage::CloudFiles.new(model, &required_config) }
   let(:s) { sequence '' }
 
-  it_behaves_like 'a class that includes Configuration::Helpers' do
+  it_behaves_like 'a class that includes Config::Helpers' do
     let(:default_overrides) { { 'segment_size' => 15 } }
     let(:new_overrides) { { 'segment_size' => 20 } }
   end
 
   it_behaves_like 'a subclass of Storage::Base'
+  it_behaves_like 'a storage that cycles'
 
   describe '#initialize' do
     it 'provides default values' do

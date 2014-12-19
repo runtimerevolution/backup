@@ -12,7 +12,7 @@ describe Syncer::Cloud::CloudFiles do
   }
   let(:syncer) { Syncer::Cloud::CloudFiles.new(&required_config) }
 
-  it_behaves_like 'a class that includes Configuration::Helpers'
+  it_behaves_like 'a class that includes Config::Helpers'
 
   it_behaves_like 'a subclass of Syncer::Cloud::Base'
 
@@ -169,10 +169,6 @@ describe Syncer::Cloud::CloudFiles do
       expect( syncer.send(:get_remote_files, 'foo') ).to eq({})
     end
   end # describe '#get_remote_files'
-
-  describe 'Deprecations' do
-    include_examples 'Deprecation: #concurrency_type and #concurrency_level'
-  end
 
 end
 end
