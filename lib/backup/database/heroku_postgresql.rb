@@ -58,7 +58,7 @@ module Backup
             `heroku pgbackups:url --app #{app_name}`[0..-2]  # heroku returns the URL with a \n at the end  
           }          
         }
-        "wget -O #{where_to_put_it} '#{backup_url.call}'"
+        "wget --quiet --output-document #{where_to_put_it} \"#{backup_url.call}\""
       end      
 
       def password_option
